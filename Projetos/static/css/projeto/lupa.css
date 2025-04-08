@@ -1,0 +1,32 @@
+.accessibility-buttons {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+.accessibility-buttons img {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* Janela de lupa ocupando toda a largura no topo */
+
+#zoom-window {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto; /* Centraliza horizontalmente e dá espaço */
+    border: 2px solid black;
+    overflow: hidden;
+    display: none;
+    z-index: 9999;
+    position: relative; /* para ficar dentro do fluxo normal da página */
+}
+
+#zoom-window img {
+    transform: scale(2);
+    transform-origin: top left;
+    pointer-events: none;
+}

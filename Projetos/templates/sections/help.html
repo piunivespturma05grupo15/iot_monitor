@@ -1,0 +1,109 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="mb-4 text-center">Cadastrar Contato de Apoio</h3>
+
+    <!-- Formulário -->
+    <form id="form-contato" class="card p-4 shadow">
+        <div class="form-group mb-3">
+            <label>Nome:</label>
+            <input type="text" class="form-control" id="nome" required>
+        </div>
+        <div class="form-group mb-3">
+            <label>Número de Contato:</label>
+            <input type="text" class="form-control" id="numero" required>
+        </div>
+        <div class="form-group mb-3">
+            <label>Relação:</label>
+            <select class="form-control" id="relacao" size="4" style="overflow-y: auto;" required>
+                <option value="família">Família</option>
+                <option value="cuidador">Cuidador</option>
+                <option value="vizinhos">Vizinhos</option>
+                <option value="emergência">Serviços de Emergência</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-danger w-100">Salvar</button>
+    </form>
+
+    <!-- Lista de contatos -->
+    <div class="mt-5">
+        <h5>Contatos Salvos:</h5>
+        <ul id="lista-contatos" class="list-group mt-2"></ul>
+    </div>
+</div>
+
+<script>
+    document.getElementById('form-contato').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const nome = document.getElementById('nome').value;
+        const numero = document.getElementById('numero').value;
+        const relacao = document.getElementById('relacao').value;
+
+        fetch('/salvar-contato/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                nome: nome,
+                numero: numero,
+                relacao: relacao
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const lista = document.getElementById('lista-contatos');
+                lista.innerHTML = ''; // limpa a lista antes de atualizar
+
+                data.contatos.forEach(contato => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
+                    lista.appendChild(item);
+                });
+
+                // Limpar o formulário
+                document.getElementById('form-contato').reset();
+            }
+        })
+        .catch(error => console.error('Erro:', error));
+    });
+
+            // Carrega a lista de contatos ao carregar a página
+    window.addEventListener('load', () => {
+        fetch('/listar-contatos/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const lista = document.getElementById('lista-contatos');
+                lista.innerHTML = '';
+                data.contatos.forEach(contato => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
+                    lista.appendChild(item);
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao carregar contatos:', error))
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const lista = document.getElementById('lista-contatos');
+                lista.innerHTML = '';
+                data.contatos.forEach(contato => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
+                    lista.appendChild(item);
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+
+{% load static %}
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center"style="height: calc(100vh - 60px)";>
+    <div class="row text-center">
+        <!-- Primeiro botão -->
+        <div class="col-md-6">
+            <a href="{% url 'status_pessoa' pessoa_id=1 %}">
+                <div class="btn-container">
+                    <img src="{% static 'images/gauge.svg' %}" alt="Monitoramento" class="btn-img">
+                </div>
+            </a>
+        </div>
+        <!-- Segundo botão -->
+        <div class="col-md-6">
+            <a href="{% url 'help' %}">
+                <div class="btn-container">
+                    <img src="{% static 'images/ambulance.svg' %}" alt="Socorro" class="btn-img">
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

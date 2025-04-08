@@ -1,0 +1,105 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .blink {
+        animation: blink 0.8s ease-in-out;
+    }
+</style>
+
+<div class="w-full h-screen bg-gray-100 flex items-center justify-center overflow-hidden">
+    <div class="max-w-7xl w-full px-6 py-10">
+        <h1 class="text-4xl font-semibold mb-10 text-center">Status do Monitoramento</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="glp" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Nível de GLP</div>
+                <div class="text-6xl font-bold" id="glp_value">-</div>
+            </div>
+
+            <div id="co2" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Nível de CO²</div>
+                <div class="text-6xl font-bold" id="co2_value">-</div>
+            </div>
+
+            <div id="temperatura" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Temperatura</div>
+                <div class="text-6xl font-bold" id="temperatura_value">-</div>
+            </div>
+
+            <div id="posicao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Posição</div>
+                <div class="text-6xl font-bold" id="posicao_value">-</div>
+            </div>
+
+            <div id="saturacao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Saturação O²</div>
+                <div class="text-6xl font-bold" id="saturacao_value">-</div>
+            </div>
+
+            <div id="localizacao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Localização</div>
+                <div class="text-6xl font-bold" id="localizacao_value">-</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pessoaId = "{{ pessoa_id }}";
+
+    function updateCard(id, valor, unidade) {
+        const card = document.getElementById(id);
+        const element = document.getElementById(id + '_value');
+        if (valor === null || valor === undefined) {
+            card.className = "rounded-2xl p-10 blink bg-gray-300 shadow-lg text-center";
+            element.innerText = "-";
+        } else {
+            let novaClasse = "rounded-2xl p-10 blink shadow-lg text-center ";
+            if (id === 'temperatura') {
+                novaClasse += (valor > 37 ? "bg-red-300" : "bg-green-300");
+            } else if (id === 'posicao') {
+                novaClasse += (valor === 'Queda' ? "bg-red-300" : "bg-green-300");
+            } else {
+                novaClasse += "bg-green-300";
+            }
+            card.className = novaClasse;
+            element.innerText = valor + (unidade || "");
+        }
+        setTimeout(() => card.classList.remove('blink'), 800);
+    }
+
+    function fetchStatus() {
+        fetch(`/Api/status/${pessoaId}/`, {
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateCard('glp', data.glp, "%");
+            updateCard('co2', data.co2, "%");
+            updateCard('temperatura', data.temperatura, "º");
+            updateCard('posicao', data.posicao, "");
+            updateCard('saturacao', data.saturacao, "%");
+            updateCard('localizacao', data.localizacao, "");
+        })
+        .catch(error => console.error('Erro ao buscar dados:', error));
+    }
+
+    fetchStatus();
+    setInterval(fetchStatus, 10000);
+</script>
+{% endblock %}
