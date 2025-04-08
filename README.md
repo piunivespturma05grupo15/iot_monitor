@@ -2,6 +2,8 @@
 
 Este é o repositório do Projeto Integrador do Grupo 15 da Turma 05 da UNIVESP. O sistema foi desenvolvido em Django e utiliza o banco de dados MySQL (via Docker) por padrão.
 
+<img src="Projetos/static/images/app.png" alt="Homepage do projeto"/>
+
 ## 🛠️ Requisitos
 
 - Python 3.10+ instalado  
