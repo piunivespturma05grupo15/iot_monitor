@@ -83,7 +83,7 @@ DATABASES = {
         'NAME': 'monitoramentoprojetounivesp',
         'USER': 'root',
         'PASSWORD': '005Grupo-015',
-        'HOST': 'localhost',  # ou o IP do servidor MySQL se estiver rodando remotamente
+        'HOST': '127.0.0.1',  # ou o IP do servidor MySQL se estiver rodando remotamente
         'PORT': '3306',  # Porta padrão do MySQL
     }
 }
