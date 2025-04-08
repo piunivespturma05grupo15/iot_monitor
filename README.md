@@ -1,4 +1,4 @@
-# Projeto Integrador - Grupo 15 - Turma 05 (UNIVESP)
+# IoT Health Monitor
 
 Este é o repositório do Projeto Integrador do Grupo 15 da Turma 05 da UNIVESP. O sistema foi desenvolvido em Django e utiliza o banco de dados MySQL (via Docker) por padrão.
 
