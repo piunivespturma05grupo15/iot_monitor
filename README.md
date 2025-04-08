@@ -80,16 +80,16 @@ O servidor estará disponível em: [http://localhost:8000](http://localhost:8000
 
 ```
 PI/
-├── Api/			#Django App
+├── Api/	#Django App
 │
-├── Projeto/		#Django Project
+├── Projeto/	#Django Project
 │   ├── __init__.py
 │   ├── asgi.py
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
 │
-├── Projetos/        # Django App
+├── Projetos/	# Django App
 │
 ├── manage.py
 ├── requirements.txt
