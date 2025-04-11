@@ -56,8 +56,8 @@ Crie um arquivo `.env` (ou configure diretamente no `settings.py`) com as creden
 
 ```env
 DB_NAME=monitoramentoprojetounivesp
-DB_USER=root
-DB_PASSWORD=005Grupo-015
+DB_USER=XXXXX
+DB_PASSWORD=XXXXXXX
 DB_HOST=localhost
 DB_PORT=3306
 ```
