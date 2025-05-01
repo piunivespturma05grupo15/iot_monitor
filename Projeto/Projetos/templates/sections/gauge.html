@@ -1,0 +1,237 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .blink {
+        animation: blink 0.8s ease-in-out;
+    }
+</style>
+
+<div class="w-full h-screen bg-gray-100 flex items-center justify-center overflow-hidden">
+    <div class="max-w-7xl w-full px-6 py-10">
+        <h1 class="text-4xl font-semibold mb-10 text-center">Status do Monitoramento</h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="glp" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Nível de GLP</div>
+                <div class="text-6xl font-bold" id="glp_value">-</div>
+            </div>
+
+            <div id="co2" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Nível de CO²</div>
+                <div class="text-6xl font-bold" id="co2_value">-</div>
+            </div>
+
+            <div id="temperatura" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Temperatura</div>
+                <div class="text-6xl font-bold" id="temperatura_value">-</div>
+            </div>
+
+            <div id="posicao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Posição</div>
+                <div class="text-6xl font-bold" id="posicao_value">-</div>
+            </div>
+
+            <div id="saturacao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Saturação O²</div>
+                <div class="text-6xl font-bold" id="saturacao_value">-</div>
+            </div>
+
+            <div id="localizacao" class="rounded-2xl p-10 bg-gray-300 shadow-lg text-center">
+                <div class="text-2xl mb-2">Localização</div>
+                <div class="text-6xl font-bold" id="localizacao_value">-</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pessoaId = "{{ pessoa_id }}";
+    const telefonePessoa = "{{ telefone }}";  // Recebendo o número de telefone da pessoa
+
+    // Definindo os limites para cada tipo de leitura
+    const limites = {
+        temperatura: 37, // Temperatura superior a 37º
+        co2: 1000,         // CO2 superior a 40%
+        glp: 50,         // GLP superior a 50%
+        saturacao: 95,   // Saturação de O2 inferior a 95%
+    };
+
+    function updateCard(id, valor, unidade) {
+        const card = document.getElementById(id);
+        const element = document.getElementById(id + '_value');
+
+        if (valor === null || valor === undefined) {
+            card.className = "rounded-2xl p-10 blink bg-gray-300 shadow-lg text-center";
+            element.innerText = "-";
+        } else {
+            let novaClasse = "rounded-2xl p-10 blink shadow-lg text-center ";
+
+            if (id === 'temperatura') {
+                if (valor > limites.temperatura) {
+                    novaClasse += "bg-red-300";
+                } else if (valor >= limites.temperatura - 1) {
+                    novaClasse += "bg-yellow-300";
+                } else {
+                    novaClasse += "bg-green-300";
+                }
+            } else if (id === 'co2') {
+                if (valor > limites.co2 * 2) {
+                    novaClasse += "bg-red-300";      // Acima de 2000 ppm = risco
+                } else if (valor > limites.co2) {
+                    novaClasse += "bg-yellow-300";   // 1000–2000 ppm = alerta
+                } else {
+                    novaClasse += "bg-green-300";    // <=1000 ppm = seguro
+                }
+            } else if (id === 'glp') {
+                if (valor > limites.glp) {
+                    novaClasse += "bg-red-300";
+                } else if (valor >= limites.glp - 10) {
+                    novaClasse += "bg-yellow-300";
+                } else {
+                    novaClasse += "bg-green-300";
+                }
+            } else if (id === 'saturacao') {
+                if (valor < limites.saturacao) {
+                    novaClasse += "bg-red-300";
+                } else if (valor <= limites.saturacao + 1) {
+                    novaClasse += "bg-yellow-300";
+                } else {
+                    novaClasse += "bg-green-300";
+                }
+            } else if (id === 'posicao') {
+                novaClasse += (valor === 'Queda' ? "bg-red-300" : "bg-green-300");
+            } else {
+                novaClasse += "bg-green-300";
+            }
+
+            card.className = novaClasse;
+            element.innerText = valor + (unidade || "");
+        }
+
+        setTimeout(() => card.classList.remove('blink'), 800);
+    }
+
+    const ultimaMensagem = {
+        temperatura: 0,
+        co2: 0,
+        glp: 0,
+        saturacao: 0,
+        posicao: 0,
+    };
+
+    const intervaloEnvio = 5 * 60 * 1000; // 5 minutos em milissegundos
+
+    function podeEnviar(tipo) {
+        const agora = Date.now();
+        if (agora - ultimaMensagem[tipo] >= intervaloEnvio) {
+            ultimaMensagem[tipo] = agora;
+            return true;
+        }
+        return false;
+    }
+
+    function fetchStatus() {
+        fetch(`/Api/status/${pessoaId}/`, {
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    // Se a resposta não for 200 (OK), lança um erro
+                    throw new Error('Erro ao buscar dados');
+                }
+                return response.json();  // Agora você pode chamar json() com segurança
+            })
+            .then(data => {
+                updateCard('glp', data.glp, "%");
+                updateCard('co2', data.co2, " ppm");
+                updateCard('temperatura', data.temperatura, "º C");
+                updateCard('posicao', data.posicao, "");
+                updateCard('saturacao', data.saturacao, "%");
+                updateCard('localizacao', data.localizacao, "");
+
+                if (data.temperatura > limites.temperatura && podeEnviar('temperatura')) {
+                    sendWhatsAppMessage(`Temperatura acima do normal: ${data.temperatura}º`);
+                }
+                if (data.co2 > limites.co2 && podeEnviar('co2')) {
+                    sendWhatsAppMessage(`Nível de CO² acima do normal: ${data.co2}%`);
+                }
+                if (data.glp > limites.glp && podeEnviar('glp')) {
+                    sendWhatsAppMessage(`Nível de GLP acima do normal: ${data.glp}%`);
+                }
+                if (data.saturacao < limites.saturacao && podeEnviar('saturacao')) {
+                    sendWhatsAppMessage(`Saturação de O² abaixo do normal: ${data.saturacao}%`);
+                }
+                if (data.posicao === "Queda" && podeEnviar('posicao')) {
+                    sendWhatsAppMessage(`Detecção de queda!`);
+                }
+            })
+            .catch(error => console.error('Erro ao buscar dados:', error));
+    }
+
+    function limparTelefone(telefone) {
+        let numeroLimpo = telefone.replace(/\D/g, ''); // Remove tudo que não for número
+
+        // Verifica se o número começa com o código do país e adiciona caso necessário
+        if (!numeroLimpo.startsWith('55')) {
+            numeroLimpo = '55' + numeroLimpo;  // Adiciona o código do Brasil (55)
+        }
+        return numeroLimpo;
+    }
+
+    function sendWhatsAppMessage(message) {
+        try {
+            const numeroLimpo = limparTelefone(telefonePessoa);  // Garantir que o telefone tenha o código do país
+
+            const numeroFormatado = `${numeroLimpo}@c.us`;
+
+            fetch('http://localhost:3000/send-message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: numeroFormatado,
+                    message: message,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Mensagem enviada:', data);
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar mensagem:', error);
+                });
+        } catch (error) {
+            console.error('Erro na formatação do telefone:', error.message);
+        }
+    }
+
+    fetchStatus();
+    setInterval(fetchStatus, 10000);
+</script>
+
+{% endblock %}

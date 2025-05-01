@@ -1,0 +1,34 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container d-flex flex-column justify-content-center align-items-center" style="height: calc(100vh - 60px);">
+
+    <!-- Mensagem de boas-vindas -->
+    {% if perfil %}
+    <h2 class="mb-5 text-center">{{ saudacao }}, {{ perfil.nome_monitorado }}!</h2>
+    {% else %}
+    <h2 class="mb-5 text-center">Olá, visitante!</h2>
+    {% endif %}
+
+
+    <div class="row text-center">
+        <!-- Primeiro botão -->
+        <div class="col-md-6">
+            <a href="{% url 'status_pessoa' pessoa_id=pessoa_id %}">
+                <div class="btn-container">
+                    <img src="{% static 'images/gauge.svg' %}" alt="Monitoramento" class="btn-img">
+                </div>
+            </a>
+        </div>
+        <!-- Segundo botão -->
+        <div class="col-md-6">
+            <a href="{% url 'help' %}">
+                <div class="btn-container">
+                    <img src="{% static 'images/ambulance.svg' %}" alt="Socorro" class="btn-img">
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

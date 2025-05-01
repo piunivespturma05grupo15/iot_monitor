@@ -1,0 +1,24 @@
+curl.exe -X POST http://localhost:8000/Api/status/ -H "Content-Type: application/json" -d "{\"pessoa_id\":1,\"glp\":0,\"co2\":20,\"temperatura\":38,\"posicao\":\"Queda\",\"saturacao\":98,\"localizacao\":\"Casa\"}"
+
+
+curl.exe -X POST http://localhost:8000/Api/status/ `
+-H "Content-Type: application/json" `
+-d "{\"pessoa_id\": 1, \"glp\": 20, \"co2\": 15, \"temperatura\": 36.7, \"posicao\": \"Em pé\", \"saturacao\": 97, \"localizacao\": \"Casa\"}"
+
+####
+
+from api.serializers import StatusPessoaSerializer
+
+data = {
+    "pessoa_id": 1,
+    "glp": 20,
+    "co2": 15,
+    "temperatura": 36.7,
+    "posicao": "Em pé",
+    "saturacao": 97,
+    "localizacao": "Casa"
+}
+
+s = StatusPessoaSerializer(data=data)
+print(s.is_valid())  # deve ser True
+print(s.errors)

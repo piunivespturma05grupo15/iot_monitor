@@ -1,0 +1,158 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid" style="height: calc(100vh - 60px);">
+    <div class="container d-flex justify-content-center align-items-center h-100">
+        <div class="col-12 col-md-8 col-lg-6">
+            <h1 class="text-center mb-4 ms-5">CADASTRAR <strong>USUÁRIO</strong></h1>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Campo: Usuário -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.username.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Usuário</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Nome do Monitorado -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.nome_monitorado.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Nome do
+                            Monitorado</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.nome_monitorado }}
+                        {% for error in form.nome_monitorado.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Idade -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.idade.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Idade</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.idade }}
+                        {% for error in form.idade.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Endereço -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.endereco.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Endereço</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.endereco }}
+                        {% for error in form.endereco.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Número WhatsApp -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.telefone.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0">
+                        <strong>Número WhatsApp</strong>
+                    </label>
+                    <div class="col-12 col-sm-8">
+                        <input type="text" name="telefone" id="telefone" class="form-control"
+                            placeholder="+55 (11) 98765-4321" maxlength="20"
+                            value="{{ form.initial.telefone|default:'+55 ' }}" required>
+                        {% for error in form.telefone.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Senha -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.password1.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Senha</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.password1 }}
+                        {% for error in form.password1.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo: Confirmar Senha -->
+                <div class="row mb-3 align-items-center">
+                    <label for="{{ form.password2.id_for_label }}"
+                        class="col-12 col-sm-4 col-form-label text-sm-end mb-2 mb-sm-0"><strong>Confirme a
+                            Senha</strong></label>
+                    <div class="col-12 col-sm-8">
+                        {{ form.password2 }}
+                        {% for error in form.password2.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Botão -->
+                <div class="mb-3 row">
+                    <div class="col-sm-4 offset-sm-2 text-end">
+                        <button type="submit" class="btn btn-danger">CADASTRAR</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const telefoneInput = document.getElementById('telefone');
+
+    telefoneInput.addEventListener('input', function (e) {
+        let valor = e.target.value.replace(/\D/g, '');
+
+        // Remove o código do país se já estiver embutido
+        if (valor.startsWith('55')) {
+            valor = valor.substring(2);
+        }
+
+        // Limita o número a 11 dígitos (2 DDD + 9 número)
+        valor = valor.substring(0, 11);
+
+        // Reconstroi com a formatação
+        let formatado = '+55 ';
+        if (valor.length > 0) formatado += '(' + valor.substring(0, 2);
+        if (valor.length >= 2) formatado += ') ';
+        if (valor.length >= 7) {
+            formatado += valor.substring(2, 7) + '-' + valor.substring(7);
+        } else if (valor.length > 2) {
+            formatado += valor.substring(2);
+        }
+
+        e.target.value = formatado;
+    });
+
+    // Inicializa com +55 caso esteja vazio
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!telefoneInput.value.trim()) {
+            telefoneInput.value = '+55 ';
+        }
+    });
+</script>
+
+
+
+{% endblock %}

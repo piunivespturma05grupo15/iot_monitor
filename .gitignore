@@ -1,0 +1,22 @@
+ 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+*.sqlite3
+
+# Node.js
+node_modules/
+.wwebjs_auth/
+.qrcode/
+
+# VSCode
+.vscode/
+
+# Sistema
+*.log
+.DS_Store
+Thumbs.db

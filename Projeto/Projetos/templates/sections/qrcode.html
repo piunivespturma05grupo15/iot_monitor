@@ -1,0 +1,46 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <h1 class="mb-4">Escaneie o QR Code para conectar o WhatsApp</h1>
+
+    <div id="qrcode-container" class="mb-3">
+        <img id="qrcode" src="" alt="QR Code do WhatsApp" class="img-fluid" style="max-width: 300px;">
+    </div>
+
+    <p class="text-muted">Este código se atualiza automaticamente.</p>
+    <p class="text-muted">Você será redirecionado automaticamente.</p>
+</div>
+
+<script>
+    async function carregarQRCode() {
+        try {
+            const response = await fetch('http://localhost:3000/qrcode');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('qrcode').src = data.qr;
+            } else {
+                document.getElementById('qrcode').alt = "QR Code ainda não disponível";
+            }
+        } catch (error) {
+            console.error('Erro ao carregar QR Code:', error);
+        }
+    }
+
+    async function verificarStatus() {
+        try {
+            const response = await fetch('http://localhost:3000/status-whatsapp');
+            const data = await response.json();
+            if (data.pronto) {
+                window.location.href = '/'; // Redireciona para a home
+            }
+        } catch (error) {
+            console.error('Erro ao verificar status do WhatsApp:', error);
+        }
+    }
+
+    carregarQRCode(); // Primeira chamada
+    setInterval(carregarQRCode, 60000); // Atualiza o QR Code a cada 60s
+    setInterval(verificarStatus, 3000); // Verifica status a cada 3s
+</script>
+{% endblock %}
