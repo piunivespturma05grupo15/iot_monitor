@@ -96,21 +96,27 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .containerPolicial {
-        padding: 1rem;
+    /* Centraliza o conteúdo verticalmente no mobile */
+    .container {
+        height: 90vh !important;
+        justify-content: center !important;
     }
 
-    .mb-3.row {
+    .btn-img {
+        width: 120px; /* Aumenta o tamanho das imagens */
+        height: auto;
+    }
+
+    .btn-container {
+        margin-bottom: 2rem; /* Espaçamento entre os botões */
+    }
+
+    .row.text-center {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
     }
 
-    .mb-3.row .col-sm-2,
-    .mb-3.row .col-sm-4 {
-        width: 100%;
-    }
-
-    .btn {
+    .row.text-center .col-md-6 {
         width: 100%;
     }
 }

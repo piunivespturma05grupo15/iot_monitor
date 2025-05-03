@@ -12,6 +12,8 @@ class Perfil(models.Model):
         return self.nome_monitorado
 
 class ApoioContato(models.Model):
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='contatos', null=True, blank=True)
+
     OPCOES_RELACAO = [
         ('familia', 'Família'),
         ('cuidador', 'Cuidador'),

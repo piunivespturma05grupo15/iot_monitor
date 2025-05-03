@@ -87,41 +87,84 @@ def logout_view(request):
 def qrcode_view(request):
     return render(request, 'sections/qrcode.html')
 
+@login_required
 def help(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         numero = request.POST.get('numero')
         tipo_contato = request.POST.get('tipo_contato')
 
-        # Aqui você pode salvar no banco (modelo) ou apenas simular
-        print(f"Contato cadastrado: {nome}, {numero}, {tipo_contato}")
+        # Busca o perfil do usuário logado
+        perfil = Perfil.objects.get(user=request.user)
+
+        # Cria e associa o contato ao perfil
+        ApoioContato.objects.create(
+            nome=nome,
+            numero=numero,
+            relacao=tipo_contato,
+            perfil=perfil
+        )
+
+        # Lista os contatos do perfil do usuário
+        contatos = ApoioContato.objects.filter(perfil=perfil)
 
         mensagem = "Contato cadastrado com sucesso!"
-        return render(request, 'sections/help.html', {'mensagem': mensagem})
+        return render(request, 'sections/help.html', {
+            'mensagem': mensagem,
+            'contatos': contatos
+        })
 
-    return render(request, 'sections/help.html')
+    else:
+        # Se for GET, mostra os contatos do perfil
+        perfil = Perfil.objects.get(user=request.user)
+        contatos = ApoioContato.objects.filter(perfil=perfil)
 
-@csrf_exempt
+        return render(request, 'sections/help.html', {
+            'contatos': contatos
+        })
+
+@csrf_exempt  # necessário por usar fetch sem incluir token manual
+@login_required
 def salvar_contato(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        nome = data.get('nome')
-        numero = data.get('numero')
-        relacao = data.get('relacao')
+        try:
+            data = json.loads(request.body)
+            nome = data.get('nome')
+            numero = data.get('numero')
+            relacao = data.get('relacao')
 
-        # Salvar no banco
-        ApoioContato.objects.create(nome=nome, numero=numero, relacao=relacao)
+            perfil = Perfil.objects.get(user=request.user)
 
-        # Buscar todos os contatos
-        contatos = ApoioContato.objects.all().values()
+            # Cria contato associado ao perfil
+            ApoioContato.objects.create(
+                nome=nome,
+                numero=numero,
+                relacao=relacao,
+                perfil=perfil
+            )
 
-        # Retornar como JSON
-        return JsonResponse({'status': 'ok', 'contatos': list(contatos)})
+            # Lista atualizada dos contatos do perfil
+            contatos = ApoioContato.objects.filter(perfil=perfil).values('nome', 'numero', 'relacao')
+
+            return JsonResponse({'status': 'ok', 'contatos': list(contatos)})
+
+        except Perfil.DoesNotExist:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Perfil não encontrado.'}, status=400)
+
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=500)
+
+    return JsonResponse({'status': 'erro', 'mensagem': 'Método não permitido.'}, status=405)
     
+@login_required
 def listar_contatos(request):
-    if request.method == 'GET':
-        contatos = list(ApoioContato.objects.values())
-        return JsonResponse({'status': 'ok', 'contatos': contatos})
+    try:
+        perfil = Perfil.objects.get(user=request.user)
+        contatos = ApoioContato.objects.filter(perfil=perfil).values('nome', 'numero', 'relacao')
+        return JsonResponse({'status': 'ok', 'contatos': list(contatos)})
+    except Perfil.DoesNotExist:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Perfil não encontrado.'}, status=400)
+
 
 
 @login_required(login_url='login_view')

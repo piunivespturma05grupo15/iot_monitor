@@ -24,10 +24,10 @@
         <div class="form-group mb-3">
             <label><strong>Relação:</strong></label>
             <select class="form-control" id="relacao" size="4" style="overflow-y: auto;" required>
-                <option value="família">Família</option>
+                <option value="familia">Família</option>
                 <option value="cuidador">Cuidador</option>
                 <option value="vizinhos">Vizinhos</option>
-                <option value="emergência">Serviços de Emergência</option>
+                <option value="emergencia">Serviços de Emergência</option>
             </select>
         </div>
         <button type="submit" class="btn btn-danger w-100">Salvar</button>
@@ -36,8 +36,22 @@
     <!-- Lista de contatos -->
     <div class="mt-5">
         <h5>Contatos Salvos:</h5>
-        <ul id="lista-contatos" class="list-group mt-2"></ul>
+        <ul id="lista-contatos" class="list-group mt-2">
+            {% for contato in contatos %}
+                <li class="list-group-item">
+                    {{ contato.nome }} ({{ contato.get_relacao_display }}) - {{ contato.numero }}
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">Nenhum contato cadastrado.</li>
+            {% endfor %}
+        </ul>
     </div>
+
+    {% if mensagem %}
+        <div class="alert alert-success mt-3" role="alert">
+            {{ mensagem }}
+        </div>
+    {% endif %}
 </div>
 
 <script>
@@ -54,68 +68,48 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify({
-                nome: nome,
-                numero: numero,
-                relacao: relacao
-            })
+            body: JSON.stringify({ nome, numero, relacao })
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'ok') {
-                    const lista = document.getElementById('lista-contatos');
-                    lista.innerHTML = ''; // limpa a lista antes de atualizar
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const lista = document.getElementById('lista-contatos');
+                lista.innerHTML = '';
 
-                    data.contatos.forEach(contato => {
-                        const item = document.createElement('li');
-                        item.className = 'list-group-item';
-                        item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
-                        lista.appendChild(item);
-                    });
+                if (data.contatos.length === 0) {
+                    const vazio = document.createElement('li');
+                    vazio.className = 'list-group-item text-muted';
+                    vazio.textContent = 'Nenhum contato cadastrado.';
+                    lista.appendChild(vazio);
+                    return;
+                }
 
-                    // Limpar o formulário
-                    document.getElementById('form-contato').reset();
-                }
-            })
-            .catch(error => console.error('Erro:', error));
-    });
+                data.contatos.forEach((contato, index) => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
 
-    // Carrega a lista de contatos ao carregar a página
-    window.addEventListener('load', () => {
-        fetch('/listar-contatos/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'ok') {
-                    const lista = document.getElementById('lista-contatos');
-                    lista.innerHTML = '';
-                    data.contatos.forEach(contato => {
-                        const item = document.createElement('li');
-                        item.className = 'list-group-item';
-                        item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
-                        lista.appendChild(item);
-                    });
-                }
-            })
-            .catch(error => console.error('Erro ao carregar contatos:', error))
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'ok') {
-                    const lista = document.getElementById('lista-contatos');
-                    lista.innerHTML = '';
-                    data.contatos.forEach(contato => {
-                        const item = document.createElement('li');
-                        item.className = 'list-group-item';
-                        item.textContent = `${contato.nome} (${contato.relacao}) - ${contato.numero}`;
-                        lista.appendChild(item);
-                    });
-                }
-            });
+                    // Destaque o último contato adicionado
+                    if (index === data.contatos.length - 1) {
+                        item.classList.add('bg-success', 'text-white');
+                        setTimeout(() => {
+                            item.classList.remove('bg-success', 'text-white');
+                        }, 2000);
+                    }
+
+                    lista.appendChild(item);
+                });
+
+                // Limpa o formulário
+                document.getElementById('form-contato').reset();
+            }
+        })
+        .catch(error => console.error('Erro:', error));
     });
 
     document.getElementById('numero').addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for dígito
-
-        if (value.length > 11) value = value.slice(0, 11); // Limita a 11 dígitos
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
 
         if (value.length >= 2 && value.length <= 6) {
             e.target.value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
